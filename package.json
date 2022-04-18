@@ -16,5 +16,8 @@
   "bugs": {
     "url": "https://github.com/Hongseoupyun/tinyapp/issues"
   },
-  "homepage": "https://github.com/Hongseoupyun/tinyapp#readme"
+  "homepage": "https://github.com/Hongseoupyun/tinyapp#readme",
+  "dependencies": {
+    "express": "^4.17.3"
+  }
 }
