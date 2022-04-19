@@ -29,7 +29,7 @@ app.get("/urls", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL  };
-  res.render("urls_show", )
+  res.render("urls_show",templateVars )
 })
 
 app.listen(PORT, () => {
