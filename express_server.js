@@ -4,6 +4,11 @@ const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
 
+function generateRandomString() {
+  return Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
+
+}
+
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
 
@@ -36,8 +41,8 @@ app.get("/urls/new", (req, res) => {
 
 app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: req.params.longURL  };
-  res.render("urls_show", templateVars );
-}); 
+  res.render("urls_show", templateVars);
+});
 
 app.post("/urls", (req, res) => {
   console.log(req.body);  // Log the POST request body to the console
