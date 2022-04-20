@@ -8,7 +8,7 @@ const { cookie, clearCookie } = require("express/lib/response");
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-app.use(cookieParser())
+app.use(cookieParser());
 
 function generateRandomString() {
   return Math.random().toString(36).substring(2,8);
@@ -76,16 +76,15 @@ app.post("/urls/:id",(req, res) =>{
 
 app.post("/login",(req, res) => {
  
-  res.cookie("username", req.body.username) 
-  console.log(req.body)
-  res.redirect("/urls")
+  res.cookie("username", req.body.username);
+  res.redirect("/urls");
   
 });
 
 app.post("/logout",(req, res) => {
-  res.clearCookie("username")
-  res.redirect("/urls")
-})
+  res.clearCookie("username");
+  res.redirect("/urls");
+});
 
 
 
