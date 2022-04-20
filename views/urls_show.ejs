@@ -19,12 +19,12 @@
             <%= shortURL %>
           </a></p>
       </div>
-      <div class="card-footer text-muted" style=" 
+      
+      <div class="card-footer text-muted">
     
-        display: flex;
-        justify-content: center;
-    ">
-        <form class="form-inline" action="<%= shortURL %>"" method="POST">
+                <h1>Edit</h1>
+        <form class="form-inline justify-content-center" action="/urls/<%= shortURL %>" method="POST">
+          
           <div class="form-group mb-2">
             <label for="longURL">New URL:</label>
             <input class="form-control" type="text" name="longURL" placeholder="http://"
