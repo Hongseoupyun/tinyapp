@@ -16,14 +16,7 @@ function generateRandomString() {
 function generateRandomId() {
   return Math.random().toString(36).substring(2,8);
 }
-const checkingemail = function(emailinput){
-  for (let userid in users){
-    if (emailinput === users[userid].email){
-     
-     return true
-    }
-  }
-}
+
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -106,7 +99,10 @@ app.post("/urls/:id",(req, res) =>{
 
 app.post("/login",(req, res) => {
  
-  res.cookie("username", req.body.username);
+
+  //checkingemail(req.body)
+  console.log("-------",req.body)
+  //res.cookie("username", req.body.username);
   res.redirect("/urls");
   
 });
@@ -120,6 +116,15 @@ app.get("/register",(req, res) => {
 res.render("register")
 });
 
+const checkingemail = (emailinput)=>{
+  for (let userid in users){
+    if (emailinput === users[userid].email){
+     return true
+    } else{
+      return false
+    } 
+  }
+}
 app.post("/register", (req, res) => {
 
   const newemail = req.body.email;
@@ -132,14 +137,15 @@ app.post("/register", (req, res) => {
   users[newid]["password"] = newpassword;
   res.cookie("user_id", newid);
   
+  
   if (newemail === "" || newpassword === ""){
     res.status(400).send("Error! It is empty");
-  }
-  checkingemail(newemail)
-  if(checkingemail(newemail)){
+  } else if(checkingemail(newemail)) {
     res.status(400).send("Error! Mail is already existing");
+  } else {
+    res.redirect("/urls");
   }
-  res.redirect("/urls");
+  return
 });
 
 app.get("/login",(req, res) => {
