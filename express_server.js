@@ -4,6 +4,7 @@ const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieParser = require('cookie-parser');
 const { cookie, clearCookie } = require("express/lib/response");
+const { use } = require("express/lib/application");
 
 
 app.use(bodyParser.urlencoded({extended: true}));
@@ -15,6 +16,23 @@ function generateRandomString() {
 }
 function generateRandomId() {
   return Math.random().toString(36).substring(2,8);
+}
+const urlsForUser = (id) => {
+  let userUrls = {}
+  for (let url in urlDatabase) {
+    if (urlDatabase[url].userID === id){
+       userUrls[url]=urlDatabase[url]
+    }
+  }
+  return userUrls
+}
+const checkIfUserIdInData = function(req ,res){
+  const shortURL = req.params.shortURL;
+  const userid = req.cookies["user_id"]
+  if(userid !== urlDatabase[shortURL].userID ){
+    res.status(400).send("Error: You cannot delete this")
+    return
+  }
 }
 
 const existingEmail = (emailInput)=>{
@@ -51,7 +69,7 @@ const users = {
     password: "purple-monkey-dinosaur"
   },
  "user2RandomID": {
-    id: "user2RandomID", 
+    id: "user2RandomID" , 
     email: "user2@example.com", 
     password: "dishwasher-funk"
   }
@@ -70,9 +88,10 @@ app.get("./hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  
+
   const usersid = req.cookies["user_id"]
-  const templateVars = {urls: urlDatabase, user: users[usersid]};
+  const userUrls = urlsForUser(usersid)
+  const templateVars = {urls: userUrls, user: users[usersid]};
  
   res.render("urls_index",templateVars);
 });
@@ -95,19 +114,28 @@ app.get("/urls/new", (req, res) => {
 
 
 app.get("/urls/:shortURL", (req, res) => {
-
   const usersid = req.cookies["user_id"]
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: req.cookies["user_id"], user: users[usersid] };
+  if(!usersid){
+    res.status(400).send("Error: Please log in!")
+    return
+  }
+  const shortURL = req.params.shortURL
+
+  if(urlDatabase[shortURL].userID !== usersid){
+    res.status(400).send("Error: Url does not belong to you!")
+    return
+  }
+
+  const templateVars = { shortURL: shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: req.cookies["user_id"], user: users[usersid] };
 
   res.render("urls_show", templateVars);
-})
+});
+
 
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
-  
-  
-  
+
   if(req.cookies["user_id"]){
     urlDatabase[shortURL] ={
       longURL:longURL,
@@ -120,14 +148,17 @@ app.post("/urls", (req, res) => {
 
 });
 
+
 app.post("/urls/:shortURL/delete",(req, res) => {
   const shortURL = req.params.shortURL;
+  checkIfUserIdInData(req,res)
   delete urlDatabase[shortURL];
   res.redirect("/urls");
 });
 
 app.post("/urls/:shortURL",(req, res) =>{
   const shortURL = req.params.shortURL;
+  checkIfUserIdInData(req,res)
   urlDatabase[shortURL].longURL = req.body.longURL;
   res.redirect(`/urls/${shortURL}`);
 });
