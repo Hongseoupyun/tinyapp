@@ -37,11 +37,11 @@ const existingPassword = (passwordInput)=>{
 const urlDatabase = {
   b6UTxQ: {
         longURL: "https://www.tsn.ca",
-        userID: "aJ48lW"
+        userID: "userRandomID"
     },
     i3BoGr: {
         longURL: "https://www.google.ca",
-        userID: "aJ48lW"
+        userID: "userRandomID"
     }
 };
 const users = { 
@@ -78,7 +78,10 @@ app.get("/urls", (req, res) => {
 });
 
 app.get("/u/:shortURL", (req, res) => {
-  const longURL = urlDatabase[req.params.shortURL];
+  const longURL = urlDatabase[req.params.shortURL].longURL;
+  if (longURL === undefined) {
+    return res.status(400).send("The url does not exist")
+  } 
   res.redirect(longURL);
 });
 
@@ -97,14 +100,19 @@ app.get("/urls/:shortURL", (req, res) => {
   const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: req.cookies["user_id"], user: users[usersid] };
 
   res.render("urls_show", templateVars);
-});
+})
 
 app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
-  urlDatabase[shortURL] = longURL;
-
+  
+  
+  
   if(req.cookies["user_id"]){
+    urlDatabase[shortURL] ={
+      longURL:longURL,
+      userID:req.cookies["user_id"]
+    }
     res.redirect(`/urls/${shortURL}`);
   } else {
     res.status(401).send("Please log in")
@@ -118,10 +126,10 @@ app.post("/urls/:shortURL/delete",(req, res) => {
   res.redirect("/urls");
 });
 
-app.post("/urls/:id",(req, res) =>{
-  const id = req.params.id;
-  urlDatabase[id] = req.body.longURL;
-  res.redirect(`/urls/${id}`);
+app.post("/urls/:shortURL",(req, res) =>{
+  const shortURL = req.params.shortURL;
+  urlDatabase[shortURL].longURL = req.body.longURL;
+  res.redirect(`/urls/${shortURL}`);
 });
 
 app.post("/login",(req, res) => {
@@ -133,8 +141,6 @@ app.post("/login",(req, res) => {
   const findUserByEmail = function(email){
     for (let user in users){
       if (users[user].email === email) {
-        console.log('users[user]', users[user])
-        console.log('user --> ', user)
         return users[user]
       }
     } 
