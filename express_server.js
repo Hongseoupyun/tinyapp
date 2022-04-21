@@ -17,6 +17,22 @@ function generateRandomId() {
   return Math.random().toString(36).substring(2,8);
 }
 
+const existingEmail = (emailInput)=>{
+  for (let userid in users){
+    if (emailInput === users[userid].email){
+     return true
+    } 
+  }
+  return false
+}
+const existingPassword = (passwordInput)=>{
+  for (let userid in users){
+    if (passwordInput === users[userid].password){
+     return true
+    } 
+  }
+  return false
+}
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
@@ -98,61 +114,71 @@ app.post("/urls/:id",(req, res) =>{
 });
 
 app.post("/login",(req, res) => {
- 
 
-  //checkingemail(req.body)
-  console.log("-------",req.body)
-  //res.cookie("username", req.body.username);
-  res.redirect("/urls");
+  const emailIn = req.body.email
+  const passwordIn = req.body.password
+
+  // function do search and returns user object  or null if not found
+  const findUserByEmail = function(email){
+    for (let user in users){
+      if (users[user].email === email) {
+        console.log('users[user]', users[user])
+        console.log('user --> ', user)
+        return users[user]
+      }
+    } 
+    return null
+ } 
   
+
+  if (!existingEmail(emailIn) || !existingPassword(passwordIn)){
+    res.status(403).send("Error!: email or password wrong")
+  } else {
+    
+    const foundUser = findUserByEmail(emailIn)
+    if(foundUser) {
+      res.cookie("user_id", foundUser.id );
+      res.redirect("/urls")
+    }
+  }
 });
 
-app.post("/logout",(req, res) => {
-  res.clearCookie("username");
+app.get("/logout",(req, res) => {
+  res.clearCookie("user_id");
   res.redirect("/urls");
 });
 
 app.get("/register",(req, res) => {
-res.render("register")
+  const templateVars = { user: null }
+  res.render("register", templateVars)
 });
 
-const checkingemail = (emailinput)=>{
-  for (let userid in users){
-    if (emailinput === users[userid].email){
-     return true
-    } else{
-      return false
-    } 
-  }
-}
+
 app.post("/register", (req, res) => {
 
   const newemail = req.body.email;
   const newpassword = req.body.password;
   const newid = generateRandomId();
   
-  users[newid]={};
-  users[newid]["id"] = newid
-  users[newid]["email"] = newemail;
-  users[newid]["password"] = newpassword;
-  res.cookie("user_id", newid);
-  
   
   if (newemail === "" || newpassword === ""){
     res.status(400).send("Error! It is empty");
-  } else if(checkingemail(newemail)) {
+  } else if(existingEmail(newemail)) {
     res.status(400).send("Error! Mail is already existing");
   } else {
+    const user = { id: newid, email: newemail, password: newpassword }
+    users[newid] = user
+    res.cookie("user_id", newid);
     res.redirect("/urls");
   }
-  return
 });
 
+
 app.get("/login",(req, res) => {
-  res.render("login")
+  const templateVars = { user: null }
+  res.render("login", templateVars)
 })
 
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
-
