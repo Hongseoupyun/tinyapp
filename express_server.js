@@ -35,10 +35,15 @@ const existingPassword = (passwordInput)=>{
 }
 
 const urlDatabase = {
-  "b2xVn2": "http://www.lighthouselabs.ca",
-  "9sm5xK": "http://www.google.com"
+  b6UTxQ: {
+        longURL: "https://www.tsn.ca",
+        userID: "aJ48lW"
+    },
+    i3BoGr: {
+        longURL: "https://www.google.ca",
+        userID: "aJ48lW"
+    }
 };
-
 const users = { 
   "userRandomID": {
     id: "userRandomID", 
@@ -89,7 +94,7 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
 
   const usersid = req.cookies["user_id"]
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: req.cookies["user_id"], user: users[usersid] };
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: req.cookies["user_id"], user: users[usersid] };
 
   res.render("urls_show", templateVars);
 });
@@ -98,7 +103,13 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
   urlDatabase[shortURL] = longURL;
-  res.redirect(`/urls/${shortURL}`);
+
+  if(req.cookies["user_id"]){
+    res.redirect(`/urls/${shortURL}`);
+  } else {
+    res.status(401).send("Please log in")
+  }
+
 });
 
 app.post("/urls/:shortURL/delete",(req, res) => {
