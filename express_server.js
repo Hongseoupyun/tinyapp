@@ -12,13 +12,36 @@ app.use(cookieParser());
 
 function generateRandomString() {
   return Math.random().toString(36).substring(2,8);
-
+}
+function generateRandomId() {
+  return Math.random().toString(36).substring(2,8);
+}
+const checkingemail = function(emailinput){
+  for (let userid in users){
+    if (emailinput === users[userid].email){
+     
+     return true
+    }
+  }
 }
 
 const urlDatabase = {
   "b2xVn2": "http://www.lighthouselabs.ca",
   "9sm5xK": "http://www.google.com"
 };
+
+const users = { 
+  "userRandomID": {
+    id: "userRandomID", 
+    email: "user@example.com", 
+    password: "purple-monkey-dinosaur"
+  },
+ "user2RandomID": {
+    id: "user2RandomID", 
+    email: "user2@example.com", 
+    password: "dishwasher-funk"
+  }
+}
 
 app.get("/", (req, res) => {
   res.send("Hello!");
@@ -33,7 +56,10 @@ app.get("./hello", (req, res) => {
 });
 
 app.get("/urls", (req, res) => {
-  const templateVars = {urls: urlDatabase, username: req.cookies["username"]};
+  
+  const usersid = req.cookies["user_id"]
+  const templateVars = {urls: urlDatabase, user: users[usersid]};
+ 
   res.render("urls_index",templateVars);
 });
 
@@ -43,14 +69,18 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const templateVars = { username: req.cookies["username"]};
+  const usersid = req.cookies["user_id"]
+  const templateVars = { user: users[usersid]};
   res.render("urls_new", templateVars);
+
   
 });
 
 
 app.get("/urls/:shortURL", (req, res) => {
-  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], username: req.cookies["username"] };
+
+  const usersid = req.cookies["user_id"]
+  const templateVars = { shortURL: req.params.shortURL, longURL: urlDatabase[req.params.shortURL], user: req.cookies["user_id"], user: users[usersid] };
 
   res.render("urls_show", templateVars);
 });
@@ -86,8 +116,32 @@ app.post("/logout",(req, res) => {
   res.redirect("/urls");
 });
 
+app.get("/register",(req, res) => {
+res.render("register")
+});
 
+app.post("/register", (req, res) => {
 
+  const newemail = req.body.email;
+  const newpassword = req.body.password;
+  const newid = generateRandomId();
+  
+  users[newid]={};
+  users[newid]["id"] = newid
+  users[newid]["email"] = newemail;
+  users[newid]["password"] = newpassword;
+  res.cookie("user_id", newid);
+  
+  if (newemail === "" || newpassword === ""){
+    res.status(400).send("Error! It is empty");
+  }
+  checkingemail(newemail)
+  if(checkingemail(newemail)){
+    res.status(400).send("Error! Mail is already existing");
+  }
+  res.redirect("/urls");
+});
 app.listen(PORT, () => {
   console.log(`Example app listening on port ${PORT}!`);
 });
+
