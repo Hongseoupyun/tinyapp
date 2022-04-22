@@ -60,6 +60,15 @@ const existingPassword = (passwordInput)=>{
   }
   return false;
 };
+// function do search and returns user object  or null if not found
+const findUserByEmail = function(email,database) {
+  for (let user in database) {
+    if (database[user].email === email) {
+      return database[user];
+    }
+  }
+  return null;
+};
 
 const urlDatabase = {
   b6UTxQ: {
@@ -95,6 +104,7 @@ app.get("/urls.json", (req, res) => {
 app.get("./hello", (req, res) => {
   res.send("<html><body>Hello <b>World</b></body></html>\n");
 });
+
 
 app.get("/urls", (req, res) => {
 
@@ -181,23 +191,11 @@ app.post("/login",(req, res) => {
   const emailIn = req.body.email;
   const passwordIn = req.body.password;
 
-  // function do search and returns user object  or null if not found
-  const findUserByEmail = function(email) {
-    for (let user in users) {
-      if (users[user].email === email) {
-        return users[user];
-      }
-    }
-    return null;
-  };
-  
-
   if (!existingEmail(emailIn) || !existingPassword(passwordIn)) {
     
     res.status(403).send("Error!: email or password wrong");
   } else {
-    
-    const foundUser = findUserByEmail(emailIn);
+    const foundUser = findUserByEmail(emailIn,users);
     if (foundUser) {
       req.session.user_id = foundUser.id;
       //res.cookie("user_id", foundUser.id);
@@ -208,7 +206,8 @@ app.post("/login",(req, res) => {
 
 app.get("/logout",(req, res) => {
   
-  delete req.session.user_id;
+  req.session = null
+  //delete req.session.user_id;
   res.redirect("/urls");
 });
 
