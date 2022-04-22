@@ -2,16 +2,22 @@ const express = require("express");
 const app = express();
 const PORT = 8080;
 const bodyParser = require("body-parser");
-const cookieParser = require('cookie-parser');
+const cookieSession = require('cookie-session');
 const { cookie, clearCookie } = require("express/lib/response");
 const { use } = require("express/lib/application");
 const bcrypt = require('bcryptjs');
-const password = "purple-monkey-dinosaur"; // found in the req.params object
-const hashedPassword = bcrypt.hashSync(password, 10);
+
+
 
 app.use(bodyParser.urlencoded({extended: true}));
 app.set("view engine", "ejs");
-app.use(cookieParser());
+app.use(cookieSession({
+  name: 'session',
+  keys: ["My name is Yun"],
+
+  
+  maxAge: 24 * 60 * 60 * 1000 // 24 hours
+}))
 
 function generateRandomString() {
   return Math.random().toString(36).substring(2,8);
@@ -30,7 +36,8 @@ const urlsForUser = (id) => {
 };
 const checkIfUserIdInData = function(req ,res) {
   const shortURL = req.params.shortURL;
-  const userid = req.cookies["user_id"];
+  //const userid = req.cookies["user_id"];
+  const userid = req.session.user_id
   if (userid !== urlDatabase[shortURL].userID) {
     res.status(400).send("Error: You cannot delete this");
     return;
@@ -91,7 +98,8 @@ app.get("./hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
 
-  const usersid = req.cookies["user_id"];
+  //const usersid = req.cookies["user_id"];
+  const usersid = req.session.user_id
   const userUrls = urlsForUser(usersid);
   const templateVars = {urls: userUrls, user: users[usersid]};
  
@@ -107,7 +115,8 @@ app.get("/u/:shortURL", (req, res) => {
 });
 
 app.get("/urls/new", (req, res) => {
-  const usersid = req.cookies["user_id"];
+  //const usersid = req.cookies["user_id"];
+  const usersid = req.session.user_id
   const templateVars = { user: users[usersid]};
   res.render("urls_new", templateVars);
 
@@ -116,7 +125,9 @@ app.get("/urls/new", (req, res) => {
 
 
 app.get("/urls/:shortURL", (req, res) => {
-  const usersid = req.cookies["user_id"];
+  
+  //const usersid = req.cookies["user_id"];
+  const usersid = req.session.user_id
   if (!usersid) {
     res.status(400).send("Error: Please log in!");
     return;
@@ -128,7 +139,7 @@ app.get("/urls/:shortURL", (req, res) => {
     return;
   }
 
-  const templateVars = { shortURL: shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: req.cookies["user_id"], user: users[usersid] };
+  const templateVars = { shortURL: shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: req.session.user_id , user: users[usersid] };
 
   res.render("urls_show", templateVars);
 });
@@ -138,10 +149,10 @@ app.post("/urls", (req, res) => {
   const longURL = req.body.longURL;
   const shortURL = generateRandomString();
 
-  if (req.cookies["user_id"]) {
+  if (req.session.user_id) {
     urlDatabase[shortURL] = {
       longURL:longURL,
-      userID:req.cookies["user_id"]
+      userID:req.session.user_id
     };
     res.redirect(`/urls/${shortURL}`);
   } else {
@@ -188,14 +199,16 @@ app.post("/login",(req, res) => {
     
     const foundUser = findUserByEmail(emailIn);
     if (foundUser) {
-      res.cookie("user_id", foundUser.id);
+      req.session.user_id = foundUser.id;
+      //res.cookie("user_id", foundUser.id);
       res.redirect("/urls");
     }
   }
 });
 
 app.get("/logout",(req, res) => {
-  res.clearCookie("user_id");
+  
+  delete req.session.user_id;
   res.redirect("/urls");
 });
 
@@ -210,7 +223,6 @@ app.post("/register", (req, res) => {
   const newemail = req.body.email;
   const newpassword = bcrypt.hashSync(req.body.password,10)
   const newid = generateRandomId();
-  console.log(newpassword)
   
   if (newemail === "" || newpassword === "") {
     res.status(400).send("Error! It is empty");
@@ -219,7 +231,8 @@ app.post("/register", (req, res) => {
   } else {
     const user = { id: newid, email: newemail, password: newpassword };
     users[newid] = user;
-    res.cookie("user_id", newid);
+    req.session.user_id = newid;
+    //res.cookie("user_id", newid);
     res.redirect("/urls");
   }
 });
