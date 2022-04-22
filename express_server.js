@@ -184,6 +184,8 @@ app.post("/login",(req, res) => {
   const emailIn = req.body.email;
   const passwordIn = req.body.password;
 
+  
+
   if (!existingEmail(emailIn) || !existingPassword(passwordIn)) {
     
     res.status(403).send("Error!: email or password wrong");

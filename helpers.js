@@ -9,4 +9,4 @@ const findUserByEmail = function(email,database) {
 };
 
 
-module.exports = {findUserByEmail}
+module.exports = findUserByEmail
