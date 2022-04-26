@@ -89,7 +89,7 @@ const users = {
 };
 
 app.get("/", (req, res) => {
-  res.send("Hello!");
+  res.redirect("/login");
 });
 
 app.get("/urls.json", (req, res) => {
@@ -102,12 +102,14 @@ app.get("./hello", (req, res) => {
 
 
 app.get("/urls", (req, res) => {
-
-
-  const usersid = req.session.user_id;
-  const userUrls = urlsForUser(usersid);
-  const templateVars = {urls: userUrls, user: users[usersid]};
- 
+  const usersId = req.session.user_id;
+  const userUrls = urlsForUser(usersId);
+  const templateVars = {urls: userUrls, user: users[usersId]};
+  if (!usersId) {
+    res.status(400).send("Error: Please log in!");
+    return;
+  }
+  
   res.render("urls_index",templateVars);
 });
 
@@ -121,8 +123,8 @@ app.get("/u/:shortURL", (req, res) => {
 
 app.get("/urls/new", (req, res) => {
 
-  const usersid = req.session.user_id;
-  const templateVars = { user: users[usersid]};
+  const usersId = req.session.user_id;
+  const templateVars = { user: users[usersId]};
   res.render("urls_new", templateVars);
 
   
@@ -132,19 +134,19 @@ app.get("/urls/new", (req, res) => {
 app.get("/urls/:shortURL", (req, res) => {
   
  
-  const usersid = req.session.user_id;
-  if (!usersid) {
+  const usersId = req.session.user_id;
+  if (!usersId) {
     res.status(400).send("Error: Please log in!");
     return;
   }
   const shortURL = req.params.shortURL;
 
-  if (urlDatabase[shortURL].userID !== usersid) {
+  if (urlDatabase[shortURL].userID !== usersId) {
     res.status(400).send("Error: Url does not belong to you!");
     return;
   }
 
-  const templateVars = { shortURL: shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: req.session.user_id , user: users[usersid] };
+  const templateVars = { shortURL: shortURL, longURL: urlDatabase[req.params.shortURL].longURL, user: req.session.user_id , user: users[usersId] };
 
   res.render("urls_show", templateVars);
 });
@@ -214,18 +216,18 @@ app.get("/register",(req, res) => {
 
 app.post("/register", (req, res) => {
 
-  const newemail = req.body.email;
-  const newpassword = bcrypt.hashSync(req.body.password,10);
-  const newid = generateRandomId();
+  const newEmail = req.body.email;
+  const newPssword = bcrypt.hashSync(req.body.password,10);
+  const newId = generateRandomId();
   
-  if (newemail === "" || newpassword === "") {
+  if (newEmail === "" || newPssword === "") {
     res.status(400).send("Error! It is empty");
-  } else if (existingEmail(newemail)) {
+  } else if (existingEmail(newEmail)) {
     res.status(400).send("Error! Mail is already existing");
   } else {
-    const user = { id: newid, email: newemail, password: newpassword };
-    users[newid] = user;
-    req.session.user_id = newid;
+    const user = { id: newId, email: newEmail, password: newPssword };
+    users[newId] = user;
+    req.session.user_id = newId;
     res.redirect("/urls");
   }
 });
