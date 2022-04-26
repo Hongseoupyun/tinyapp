@@ -6,6 +6,7 @@ const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
 const findUserByEmail = require("./helpers");
 
+
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
 app.use(
@@ -86,6 +87,7 @@ const users = {
   },
 };
 
+//Redirects to login page if user is not logged in
 app.get("/", (req, res) => {
   res.redirect("/login");
 });
@@ -102,6 +104,7 @@ app.get("/urls", (req, res) => {
   const usersId = req.session.user_id;
   const userUrls = urlsForUser(usersId);
   const templateVars = { urls: userUrls, user: users[usersId] };
+  //If user is not logged in, sending an error
   if (!usersId) {
     res.status(400).send("Error: Please log in!");
     return;
@@ -121,7 +124,7 @@ app.get("/u/:shortURL", (req, res) => {
 app.get("/urls/new", (req, res) => {
   const usersId = req.session.user_id;
   const templateVars = { user: users[usersId] };
-  //res.render("urls_new", templateVars);
+  //It shows the list of urls only when user is logged in, otherwide, redirects to /login page
   if (usersId) {
     res.render("urls_new", templateVars);
   } else {
@@ -137,6 +140,7 @@ app.get("/urls/:shortURL", (req, res) => {
   }
   const shortURL = req.params.shortURL;
 
+  //It allows user to edit urls only belong to them
   if (urlDatabase[shortURL].userID !== usersId) {
     res.status(400).send("Error: Url does not belong to you!");
     return;
@@ -184,7 +188,7 @@ app.post("/urls/:shortURL", (req, res) => {
 app.post("/login", (req, res) => {
   const emailIn = req.body.email;
   const passwordIn = req.body.password;
-
+//login process; if mail put in is existing , it gives an error, otherwise, redirect to /urls page
   if (!existingEmail(emailIn) || !existingPassword(passwordIn)) {
     res.status(403).send("Error!: email or password wrong");
   } else {
