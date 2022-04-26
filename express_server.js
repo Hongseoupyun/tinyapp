@@ -127,7 +127,12 @@ app.get("/urls/new", (req, res) => {
   const templateVars = { user: users[usersId]};
   res.render("urls_new", templateVars);
 
-  
+  /*if (usersId){
+    res.render("urls_new", templateVars);  
+  } else {
+    res.redirect("/login")
+  }*/
+
 });
 
 
@@ -180,7 +185,7 @@ app.post("/urls/:shortURL",(req, res) =>{
   const shortURL = req.params.shortURL;
   checkIfUserIdInData(req,res);
   urlDatabase[shortURL].longURL = req.body.longURL;
-  res.redirect(`/urls/${shortURL}`);
+  res.redirect(`/urls`);
 });
 
 app.post("/login",(req, res) => {
