@@ -125,13 +125,12 @@ app.get("/urls/new", (req, res) => {
 
   const usersId = req.session.user_id;
   const templateVars = { user: users[usersId]};
-  res.render("urls_new", templateVars);
-
-  /*if (usersId){
+  //res.render("urls_new", templateVars);
+  if (usersId){
     res.render("urls_new", templateVars);  
   } else {
     res.redirect("/login")
-  }*/
+  }
 
 });
 
@@ -226,8 +225,6 @@ app.post("/register", (req, res) => {
   const newId = generateRandomId();
   
   if (newEmail === "" || req.body.password === "") {
-    console.log("newEmail-->",newEmail)
-    console.log("newPassword-->", req.body.password)
     res.status(400).send("Error! It is empty");
   } else if (existingEmail(newEmail)) {
     res.status(400).send("Error! Mail is already existing");
