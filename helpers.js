@@ -1,7 +1,7 @@
 const bcrypt = require("bcryptjs");
 
 // function do search and returns user object  or null if not found
-const findUserByEmail = function(email,database) {
+const findUserByEmail = function (email, database) {
   for (let user in database) {
     if (database[user].email === email) {
       return database[user];
@@ -21,8 +21,7 @@ function generateRandomId() {
 }
 
 //returns usersurls
-const urlsForUser = (id,urlDatabase) => {
-  
+const urlsForUser = (id, urlDatabase) => {
   let userUrls = {};
   for (let url in urlDatabase) {
     if (urlDatabase[url].userID === id) {
@@ -42,7 +41,7 @@ const checkIfUserIdInData = function (req, res) {
 };
 
 //checks if the email is already registered
-const existingEmail = (emailInput,users) => {
+const existingEmail = (emailInput, users) => {
   for (let userid in users) {
     if (emailInput === users[userid].email) {
       return true;
@@ -52,7 +51,7 @@ const existingEmail = (emailInput,users) => {
 };
 
 //checks if the password is already registred
-const existingPassword = (passwordInput,users) => {
+const existingPassword = (passwordInput, users) => {
   for (let userid in users) {
     if (bcrypt.compareSync(passwordInput, users[userid].password)) {
       return true;
@@ -61,6 +60,12 @@ const existingPassword = (passwordInput,users) => {
   return false;
 };
 
-
-
-module.exports = {findUserByEmail,generateRandomString,generateRandomId, urlsForUser,checkIfUserIdInData,existingEmail,existingPassword}
+module.exports = {
+  findUserByEmail,
+  generateRandomString,
+  generateRandomId,
+  urlsForUser,
+  checkIfUserIdInData,
+  existingEmail,
+  existingPassword,
+};

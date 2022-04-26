@@ -4,8 +4,15 @@ const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
-const {findUserByEmail,generateRandomString,generateRandomId, urlsForUser, checkIfUserIdInData,existingEmail,existingPassword} = require("./helpers");
-
+const {
+  findUserByEmail,
+  generateRandomString,
+  generateRandomId,
+  urlsForUser,
+  checkIfUserIdInData,
+  existingEmail,
+  existingPassword,
+} = require("./helpers");
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.set("view engine", "ejs");
@@ -17,12 +24,6 @@ app.use(
     maxAge: 24 * 60 * 60 * 1000, // 24 hours
   })
 );
-
-
-
-
-
-
 
 const urlDatabase = {
   b6UTxQ: {
@@ -62,7 +63,7 @@ app.get("./hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const usersId = req.session.user_id;
-  const userUrls = urlsForUser(usersId,urlDatabase);
+  const userUrls = urlsForUser(usersId, urlDatabase);
   const templateVars = { urls: userUrls, user: users[usersId] };
   //If user is not logged in, sending an error
   if (!usersId) {
@@ -149,7 +150,7 @@ app.post("/login", (req, res) => {
   const emailIn = req.body.email;
   const passwordIn = req.body.password;
   //login process; if mail put in is existing , it gives an error, otherwise, redirect to /urls page
-  if (!existingEmail(emailIn,users) || !existingPassword(passwordIn,users)) {
+  if (!existingEmail(emailIn, users) || !existingPassword(passwordIn, users)) {
     res.status(403).send("Error!: email or password wrong");
   } else {
     const foundUser = findUserByEmail(emailIn, users);
@@ -177,7 +178,7 @@ app.post("/register", (req, res) => {
 
   if (newEmail === "" || req.body.password === "") {
     res.status(400).send("Error! It is empty");
-  } else if (existingEmail(newEmail,users)) {
+  } else if (existingEmail(newEmail, users)) {
     res.status(400).send("Error! Mail is already existing");
   } else {
     const user = { id: newId, email: newEmail, password: newPassword };
