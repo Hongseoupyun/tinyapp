@@ -4,7 +4,7 @@ const PORT = 8080;
 const bodyParser = require("body-parser");
 const cookieSession = require("cookie-session");
 const bcrypt = require("bcryptjs");
-const findUserByEmail = require("./helpers");
+const {findUserByEmail,generateRandomString,generateRandomId, urlsForUser, checkIfUserIdInData,existingEmail,existingPassword} = require("./helpers");
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -18,51 +18,11 @@ app.use(
   })
 );
 
-//generates random string
-function generateRandomString() {
-  return Math.random().toString(36).substring(2, 8);
-}
-//generate random Id
-function generateRandomId() {
-  return Math.random().toString(36).substring(2, 8);
-}
-//returns usersurls
-const urlsForUser = (id) => {
-  let userUrls = {};
-  for (let url in urlDatabase) {
-    if (urlDatabase[url].userID === id) {
-      userUrls[url] = urlDatabase[url];
-    }
-  }
-  return userUrls;
-};
-//checks if userid is in database
-const checkIfUserIdInData = function (req, res) {
-  const shortURL = req.params.shortURL;
-  const userid = req.session.user_id;
-  if (userid !== urlDatabase[shortURL].userID) {
-    res.status(400).send("Error: You cannot delete this");
-    return;
-  }
-};
-//checks if the email is already registered
-const existingEmail = (emailInput) => {
-  for (let userid in users) {
-    if (emailInput === users[userid].email) {
-      return true;
-    }
-  }
-  return false;
-};
-//checks if the password is already registred
-const existingPassword = (passwordInput) => {
-  for (let userid in users) {
-    if (bcrypt.compareSync(passwordInput, users[userid].password)) {
-      return true;
-    }
-  }
-  return false;
-};
+
+
+
+
+
 
 const urlDatabase = {
   b6UTxQ: {
@@ -102,7 +62,7 @@ app.get("./hello", (req, res) => {
 
 app.get("/urls", (req, res) => {
   const usersId = req.session.user_id;
-  const userUrls = urlsForUser(usersId);
+  const userUrls = urlsForUser(usersId,urlDatabase);
   const templateVars = { urls: userUrls, user: users[usersId] };
   //If user is not logged in, sending an error
   if (!usersId) {
@@ -188,8 +148,8 @@ app.post("/urls/:shortURL", (req, res) => {
 app.post("/login", (req, res) => {
   const emailIn = req.body.email;
   const passwordIn = req.body.password;
-//login process; if mail put in is existing , it gives an error, otherwise, redirect to /urls page
-  if (!existingEmail(emailIn) || !existingPassword(passwordIn)) {
+  //login process; if mail put in is existing , it gives an error, otherwise, redirect to /urls page
+  if (!existingEmail(emailIn,users) || !existingPassword(passwordIn,users)) {
     res.status(403).send("Error!: email or password wrong");
   } else {
     const foundUser = findUserByEmail(emailIn, users);
@@ -217,7 +177,7 @@ app.post("/register", (req, res) => {
 
   if (newEmail === "" || req.body.password === "") {
     res.status(400).send("Error! It is empty");
-  } else if (existingEmail(newEmail)) {
+  } else if (existingEmail(newEmail,users)) {
     res.status(400).send("Error! Mail is already existing");
   } else {
     const user = { id: newId, email: newEmail, password: newPassword };
