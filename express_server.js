@@ -222,15 +222,17 @@ app.get("/register",(req, res) => {
 app.post("/register", (req, res) => {
 
   const newEmail = req.body.email;
-  const newPssword = bcrypt.hashSync(req.body.password,10);
+  const newPassword = bcrypt.hashSync(req.body.password,10);
   const newId = generateRandomId();
   
-  if (newEmail === "" || newPssword === "") {
+  if (newEmail === "" || req.body.password === "") {
+    console.log("newEmail-->",newEmail)
+    console.log("newPassword-->", req.body.password)
     res.status(400).send("Error! It is empty");
   } else if (existingEmail(newEmail)) {
     res.status(400).send("Error! Mail is already existing");
   } else {
-    const user = { id: newId, email: newEmail, password: newPssword };
+    const user = { id: newId, email: newEmail, password: newPassword };
     users[newId] = user;
     req.session.user_id = newId;
     res.redirect("/urls");
