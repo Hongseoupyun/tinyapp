@@ -57,10 +57,6 @@ app.get("/urls.json", (req, res) => {
   res.send(urlDatabase);
 });
 
-app.get("./hello", (req, res) => {
-  res.send("<html><body>Hello <b>World</b></body></html>\n");
-});
-
 app.get("/urls", (req, res) => {
   const usersId = req.session.user_id;
   const userUrls = urlsForUser(usersId, urlDatabase);
@@ -163,7 +159,7 @@ app.post("/login", (req, res) => {
 
 app.get("/logout", (req, res) => {
   req.session = null;
-  res.redirect("/urls");
+  res.redirect("/login");
 });
 
 app.get("/register", (req, res) => {
